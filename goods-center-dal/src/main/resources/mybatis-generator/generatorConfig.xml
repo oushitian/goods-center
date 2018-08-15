@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+    <!-- 数据库驱动-->
+    <classPathEntry location="/home/chenjc/.m2/repository/mysql/mysql-connector-java/5.1.35/mysql-connector-java-5.1.35.jar"/>
+    <context id="DB2Tables" targetRuntime="MyBatis3">
+        <commentGenerator>
+            <property name="suppressDate" value="true"/>
+            <!-- 是否去除自动生成的注释 true：是 ： false:否 -->
+            <property name="suppressAllComments" value="true"/>
+            <property name="javaFileEncoding" value="UTF-8"/>
+        </commentGenerator>
+        <!--数据库链接URL，用户名、密码 -->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://172.31.0.67/who_brand"
+                        userId="root" password="l8ka65">
+        </jdbcConnection>
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+        <!-- 生成模型的包名和位置-->
+        <javaModelGenerator targetPackage="com.jolly.model.goods"
+                            targetProject="/home/chenjc/IdeaProjects/GPlatform_v2/src/java">
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+        <!-- 生成映射文件的包名和位置-->
+        <sqlMapGenerator targetPackage=""
+                         targetProject="/home/chenjc/IdeaProjects/GPlatform_v2/src/resources/com/jolly/model/mapping/brand/goods">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+        <!-- 生成DAO的包名和位置
+        <javaClientGenerator type="XMLMAPPER" targetPackage="test.dao" targetProject="src">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>-->
+        <!-- 要生成哪些表-->
+        <!--<table tableName="supplier" domainObjectName="MarkaSupplier" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"/>-->
+        <!--<table tableName="supplier_product" domainObjectName="MarkaSupplierProduct" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"/>-->
+        <table tableName="who_supplier_product_log" domainObjectName="SupplierProductLog" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"/>
+        <!--<table tableName="who_goods_repeated_goods" domainObjectName="GoodsRepeatedGoods" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"/>-->
+        <!--<table tableName="who_carriage_template_detail" domainObjectName="CarriageTemplateDetail" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"/>-->
+        <!--<table tableName="who_knowledge_lang_site" domainObjectName="KnowledgeLangSite" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false" selectByExampleQueryId="false"/>-->
+
+    </context>
+</generatorConfiguration>

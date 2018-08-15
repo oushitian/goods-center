@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jolly.goodscenter.model.goods.SkuRelationMapper" >
+  <resultMap id="BaseResultMap" type="com.jolly.goodscenter.model.goods.SkuRelation">
+      <id column="rec_id" property="recId" jdbcType="INTEGER"/>
+      <result column="goods_id" property="goodsId" jdbcType="INTEGER"/>
+      <result column="sku_id" property="skuId" jdbcType="VARCHAR"/>
+      <result column="sku_value" property="skuValue" jdbcType="VARCHAR"/>
+      <result column="sku_color" property="skuColor" jdbcType="VARCHAR"/>
+      <result column="sku_weight" property="skuWeight" jdbcType="DECIMAL"/>
+      <result column="sku_length" property="skuLength" jdbcType="DECIMAL"/>
+      <result column="sku_width" property="skuWidth" jdbcType="DECIMAL"/>
+      <result column="sku_height" property="skuHeight" jdbcType="DECIMAL"/>
+      <result column="prop_price" property="propPrice" jdbcType="DECIMAL"/>
+      <result column="gmt_created" property="gmtCreated" jdbcType="INTEGER"/>
+      <result column="gmt_modify" property="gmtModify" jdbcType="INTEGER"/>
+      <result column="status" property="status" jdbcType="BIT"/>
+      <result column="goods_thumb" property="goodsThumb" jdbcType="VARCHAR"/>
+      <result column="tmall_sku_id" property="tmallSkuId" jdbcType="BIGINT"/>
+      <result column="sort" property="sort" jdbcType="INTEGER"/>
+      <result column="safe_num" property="safeNum" jdbcType="INTEGER"/>
+      <result column="color_sku_propvalue_id" property="colorSkuPropvalueId" jdbcType="INTEGER"/>
+      <result column="sku_size_id" property="skuSizeId" jdbcType="INTEGER"/>
+      <result column="promote_price" property="promotePrice" jdbcType="DECIMAL"/>
+      <result column="promote_starttime" property="promoteStarttime" jdbcType="INTEGER"/>
+      <result column="promote_endtime" property="promoteEndtime" jdbcType="INTEGER"/>
+      <result column="is_promote" property="isPromote" jdbcType="BIT"/>
+      <result column="in_price" property="inPrice" jdbcType="DECIMAL"/>
+      <result column="shop_price_real" property="shopPriceReal" jdbcType="DECIMAL"/>
+      <result column="promote_price_real" property="promotePriceReal" jdbcType="DECIMAL"/>
+      <result column="is_stock" property="isStock" jdbcType="TINYINT"/>
+      <result column="shop_price_real" property="shopPriceReal" jdbcType="DECIMAL"/>
+      <result column="img_id" property="imgId" jdbcType="INTEGER"/>
+      <result column="promote_message" property="promoteMessage" jdbcType="VARCHAR"/>
+      <result column="size_sku_key_id" property="sizeSkuKeyId" jdbcType="INTEGER" />
+      <result column="rate" property="rate" jdbcType="DECIMAL" />
+      <result column="currency" property="currency" jdbcType="VARCHAR" />
+      <result column="original_in_price" property="originalInPrice" jdbcType="DECIMAL" />
+      <result column="suppSkuId" property="supp_sku_id" jdbcType="VARCHAR" />
+      <result column="suppSkuBarcode" property="supp_sku_barcode" jdbcType="VARCHAR" />
+      <result column="country_sku_value" property="countrySkuValue" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    rec_id, goods_id, sku_id, sku_value, sku_color, sku_weight, sku_length, sku_width, 
+    sku_height, prop_price, gmt_created, gmt_modify, status, goods_thumb, tmall_sku_id, 
+    sort, safe_num,color_sku_propvalue_id,sku_size_id, promote_price ,promote_starttime,
+    promote_endtime,is_promote,in_price,is_stock,shop_price_real,promote_price_real,img_id,
+    promote_message,size_sku_key_id, rate, currency, original_in_price,supp_sku_id,supp_sku_barcode, country_sku_value
+  </sql>
+
+  <select id="queryList" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from who_sku_relation
+    where
+      <choose>
+          <when test="notDeleted!=null">
+              status in (0,1)
+          </when>
+          <otherwise>
+              status = 0
+          </otherwise>
+      </choose>
+
+      <if test="goodsIds!=null and goodsIds!=''">
+          and goods_id in ( ${goodsIds} )
+      </if>
+      <if test="goodsId!=null and goodsId!=''">
+          and goods_id = #{goodsId,jdbcType=INTEGER}
+      </if>
+      <if test="max != null and max >0">
+          limit #{offset},#{max}
+      </if>
+  </select>
+
+    <select id="queryCount" resultType="java.lang.Long">
+        select
+        count(1)
+        from who_sku_relation
+        where
+        <choose>
+        <when test="notDeleted!=null">
+            status in (0,1)
+        </when>
+        <otherwise>
+            status = 0
+        </otherwise>
+    </choose>
+    </select>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+        select
+        <include refid="Base_Column_List" />
+        from who_sku_relation
+        where rec_id = #{recId,jdbcType=INTEGER}
+    </select>
+
+    <select id="queryGoodsInfoBySkuId" resultType="map" parameterType="java.lang.Integer" >
+        select
+        a.goods_id,
+        a.sku_value,
+        a.prop_price,
+        a.status,
+        b.goods_sn,
+        b.is_on_sale
+        from who_sku_relation a, who_goods b
+        where rec_id = #{recId,jdbcType=INTEGER}
+        and a.goods_id = b.goods_id and a.status in (0,1) and b.is_delete = 0
+    </select>
+
+    <update id="updateStatusByGoodsId" parameterType="map">
+        update who_sku_relation
+        set status = #{status}
+        where goods_id = #{goodsId}
+    </update>
+
+    <update id="updateStockYesByGoodsId">
+        update who_sku_relation
+        set is_stock = 1
+        where goods_id = #{goodsId} and is_stock = 0
+    </update>
+
+    <update id="updateShopPriceRealByGoodsIdOrRecId" parameterType="com.jolly.goodscenter.model.goods.SkuRelation">
+        update who_sku_relation
+        set shop_price_real = #{shopPriceReal},prop_price = #{propPrice}
+        where goods_id = #{goodsId}
+         <if test="recId!=null and recId!=0">
+             and rec_id = #{recId}
+         </if>
+    </update>
+
+    <select id="querySkuInPriceByGoodsId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+        select
+        in_price,goods_id,sku_id
+        from who_sku_relation
+        where goods_id = #{goodsId,jdbcType=INTEGER}
+    </select>
+
+    <select id="querySkuRelationsByGoodsId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+        select
+        <include refid="Base_Column_List" />
+        from who_sku_relation
+        where goods_id = #{goodsId,jdbcType=INTEGER} and  status in (0,1)
+    </select>
+
+    <select id="querySkuRelationsByGoodsIds" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select
+        <include refid="Base_Column_List" />
+        from who_sku_relation
+        where goods_id in ( ${value} )
+    </select>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jolly.goodscenter.model.goods.SkuRelation" >
+        update who_sku_relation
+        <set >
+            <if test="goodsId != null" >
+                goods_id = #{goodsId,jdbcType=INTEGER},
+            </if>
+            <if test="skuId != null" >
+                sku_id = #{skuId,jdbcType=VARCHAR},
+            </if>
+            <if test="skuValue != null" >
+                sku_value = #{skuValue,jdbcType=VARCHAR},
+            </if>
+            <if test="skuColor != null" >
+                sku_color = #{skuColor,jdbcType=VARCHAR},
+            </if>
+            <if test="skuWeight != null" >
+                sku_weight = #{skuWeight,jdbcType=DECIMAL},
+            </if>
+            <if test="skuLength != null" >
+                sku_length = #{skuLength,jdbcType=DECIMAL},
+            </if>
+            <if test="skuWidth != null" >
+                sku_width = #{skuWidth,jdbcType=DECIMAL},
+            </if>
+            <if test="skuHeight != null" >
+                sku_height = #{skuHeight,jdbcType=DECIMAL},
+            </if>
+            <if test="propPrice != null" >
+                prop_price = #{propPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="gmtCreated != null" >
+                gmt_created = #{gmtCreated,jdbcType=INTEGER},
+            </if>
+            <if test="gmtModify != null" >
+                gmt_modify = #{gmtModify,jdbcType=INTEGER},
+            </if>
+            <if test="status != null" >
+                status = #{status,jdbcType=BIT},
+            </if>
+            <if test="goodsThumb != null" >
+                goods_thumb = #{goodsThumb,jdbcType=VARCHAR},
+            </if>
+            <if test="tmallSkuId != null" >
+                tmall_sku_id = #{tmallSkuId,jdbcType=BIGINT},
+            </if>
+            <if test="sort != null" >
+                sort = #{sort,jdbcType=INTEGER},
+            </if>
+            <if test="safeNum != null" >
+                safe_num = #{safeNum,jdbcType=INTEGER},
+            </if>
+            <if test="colorSkuPropvalueId != null" >
+                color_sku_propvalue_id = #{colorSkuPropvalueId,jdbcType=INTEGER},
+            </if>
+            <if test="skuSizeId != null" >
+                sku_size_id = #{skuSizeId,jdbcType=INTEGER},
+            </if>
+            <if test="promotePrice != null" >
+                promote_price = #{promotePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="promoteStarttime != null" >
+                promote_starttime = #{promoteStarttime,jdbcType=INTEGER},
+            </if>
+            <if test="promoteEndtime != null" >
+                promote_endtime = #{promoteEndtime,jdbcType=INTEGER},
+            </if>
+            <if test="isPromote != null" >
+                is_promote = #{isPromote,jdbcType=TINYINT},
+            </if>
+            <if test="promoteMessage != null" >
+                promote_message = #{promoteMessage,jdbcType=VARCHAR},
+            </if>
+            <if test="inPrice != null" >
+                in_price = #{inPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="isStock != null" >
+                is_stock = #{isStock,jdbcType=TINYINT},
+            </if>
+            <if test="shopPriceReal != null" >
+                shop_price_real = #{shopPriceReal,jdbcType=DECIMAL},
+            </if>
+            <if test="promotePriceReal != null" >
+                promote_price_real = #{promotePriceReal,jdbcType=DECIMAL},
+            </if>
+            <if test="imgId != null" >
+                img_id = #{imgId,jdbcType=INTEGER},
+            </if>
+            <if test="sizeSkuKeyId != null" >
+                size_sku_key_id = #{sizeSkuKeyId,jdbcType=INTEGER},
+            </if>
+            <if test="rate != null" >
+                rate = #{rate,jdbcType=DECIMAL},
+            </if>
+            <if test="currency != null" >
+                currency = #{currency,jdbcType=VARCHAR},
+            </if>
+            <if test="originalInPrice != null" >
+                original_in_price = #{originalInPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="suppSkuId != null" >
+                supp_sku_id = #{suppSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="suppSkuBarcode != null" >
+                supp_sku_barcode = #{suppSkuBarcode,jdbcType=VARCHAR},
+            </if>
+            <if test="countrySkuValue != null" >
+                country_sku_value = #{countrySkuValue,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where rec_id = #{recId,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateOtherSkuIsStock" parameterType="com.jolly.goodscenter.model.goods.SkuRelation" >
+        update who_sku_relation
+        set is_stock = #{isStock,jdbcType=TINYINT}
+        where  goods_id = #{goodsId,jdbcType=INTEGER}
+        and rec_id != #{recId,jdbcType=INTEGER}
+    </update>
+
+    <select id="querySkuRelationsBySkuIds" parameterType="java.lang.String" resultType="java.lang.String">
+        select
+        rec_id
+        from who_sku_relation
+        where rec_id in ( ${value} )
+    </select>
+
+
+    <select id="getSkuIdsByGoodsIds" parameterType="java.util.ArrayList" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from who_sku_relation
+        where goods_id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+
+        and status != 2
+
+    </select>
+
+    <select id="queryGoodsBySkuId" resultMap="BaseResultMap">
+        select goods_id,prop_price
+        from who_sku_relation
+        where rec_id = #{skuId,jdbcType=INTEGER}
+        LIMIT 1
+    </select>
+
+    <!-- 计算符合条件的SKU数量 -->
+    <select id="countByParams" parameterType="Map" resultType="Integer">
+        select count(1) from who_sku_relation
+        where 1 = 1
+        <if test="goodsId != null"> and goods_id = #{goodsId}</if>
+        <if test="statusNot != null"> and status != #{statusNot}</if>
+        <if test="status != null"> and status = #{status}</if>
+    </select>
+
+    <select id="queryOtherSkuIdCountByIsStock" parameterType="Map" resultType="Integer">
+        select count(1) from who_sku_relation
+        where 1 = 1
+        and goods_id = #{goodsId}
+        and sku_id !=#{skuId}
+        and is_stock = #{isStock}
+    </select>
+
+    <insert id="insertSelective" parameterType="com.jolly.goodscenter.model.goods.SkuRelation" keyProperty="recId" useGeneratedKeys="true">
+        insert into who_sku_relation
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="goodsId != null" >
+                goods_id,
+            </if>
+            <if test="skuId != null" >
+                sku_id,
+            </if>
+            <if test="skuValue != null" >
+                sku_value,
+            </if>
+            <if test="skuColor != null" >
+                sku_color,
+            </if>
+            <if test="skuWeight != null" >
+                sku_weight,
+            </if>
+            <if test="skuLength != null" >
+                sku_length,
+            </if>
+            <if test="skuWidth != null" >
+                sku_width,
+            </if>
+            <if test="skuHeight != null" >
+                sku_height,
+            </if>
+            <if test="propPrice != null" >
+                prop_price,
+            </if>
+            <if test="gmtCreated != null" >
+                gmt_created,
+            </if>
+            <if test="gmtModify != null" >
+                gmt_modify,
+            </if>
+            <if test="status != null" >
+                status,
+            </if>
+            <if test="goodsThumb != null" >
+                goods_thumb,
+            </if>
+            <if test="tmallSkuId != null" >
+                tmall_sku_id,
+            </if>
+            <if test="sort != null" >
+                sort,
+            </if>
+            <if test="safeNum != null" >
+                safe_num,
+            </if>
+            <if test="colorSkuPropvalueId != null" >
+                color_sku_propvalue_id,
+            </if>
+            <if test="skuSizeId != null" >
+                sku_size_id,
+            </if>
+            <if test="promotePrice != null" >
+                promote_price,
+            </if>
+            <if test="promoteStarttime != null" >
+                promote_starttime,
+            </if>
+            <if test="promoteEndtime != null" >
+                promote_endtime,
+            </if>
+            <if test="isPromote != null" >
+                is_promote,
+            </if>
+            <if test="promoteMessage != null" >
+                promote_message,
+            </if>
+            <if test="inPrice != null" >
+                in_price,
+            </if>
+            <if test="isStock != null" >
+                is_stock,
+            </if>
+            <if test="shopPriceReal != null" >
+                shop_price_real,
+            </if>
+            <if test="promotePriceReal != null" >
+                promote_price_real,
+            </if>
+            <if test="imgId != null" >
+                img_id,
+            </if>
+            <if test="sizeSkuKeyId != null" >
+                size_sku_key_id,
+            </if>
+            <if test="rate != null" >
+                rate,
+            </if>
+            <if test="currency != null" >
+                currency,
+            </if>
+            <if test="originalInPrice != null" >
+                original_in_price,
+            </if>
+            <if test="suppSkuId != null" >
+                supp_sku_id,
+            </if>
+            <if test="suppSkuBarcode != null" >
+                supp_sku_barcode,
+            </if>
+            <if test="countrySkuValue != null" >
+                country_sku_value,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="goodsId != null" >
+                #{goodsId,jdbcType=INTEGER},
+            </if>
+            <if test="skuId != null" >
+                #{skuId,jdbcType=VARCHAR},
+            </if>
+            <if test="skuValue != null" >
+                #{skuValue,jdbcType=VARCHAR},
+            </if>
+            <if test="skuColor != null" >
+                #{skuColor,jdbcType=VARCHAR},
+            </if>
+            <if test="skuWeight != null" >
+                #{skuWeight,jdbcType=DECIMAL},
+            </if>
+            <if test="skuLength != null" >
+                #{skuLength,jdbcType=DECIMAL},
+            </if>
+            <if test="skuWidth != null" >
+                #{skuWidth,jdbcType=DECIMAL},
+            </if>
+            <if test="skuHeight != null" >
+                #{skuHeight,jdbcType=DECIMAL},
+            </if>
+            <if test="propPrice != null" >
+                #{propPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="gmtCreated != null" >
+                #{gmtCreated,jdbcType=INTEGER},
+            </if>
+            <if test="gmtModify != null" >
+                #{gmtModify,jdbcType=INTEGER},
+            </if>
+            <if test="status != null" >
+                #{status,jdbcType=BIT},
+            </if>
+            <if test="goodsThumb != null" >
+                #{goodsThumb,jdbcType=VARCHAR},
+            </if>
+            <if test="tmallSkuId != null" >
+                #{tmallSkuId,jdbcType=BIGINT},
+            </if>
+            <if test="sort != null" >
+                #{sort,jdbcType=INTEGER},
+            </if>
+            <if test="safeNum != null" >
+                #{safeNum,jdbcType=INTEGER},
+            </if>
+            <if test="colorSkuPropvalueId != null" >
+                #{colorSkuPropvalueId,jdbcType=INTEGER},
+            </if>
+            <if test="skuSizeId != null" >
+                #{skuSizeId,jdbcType=INTEGER},
+            </if>
+            <if test="promotePrice != null" >
+                #{promotePrice,jdbcType=DECIMAL},
+            </if>
+            <if test="promoteStarttime != null" >
+                #{promoteStarttime,jdbcType=INTEGER},
+            </if>
+            <if test="promoteEndtime != null" >
+                #{promoteEndtime,jdbcType=INTEGER},
+            </if>
+            <if test="isPromote != null" >
+                #{isPromote,jdbcType=TINYINT},
+            </if>
+            <if test="promoteMessage != null" >
+                #{promoteMessage,jdbcType=VARCHAR},
+            </if>
+            <if test="inPrice != null" >
+                #{inPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="isStock != null" >
+                #{isStock,jdbcType=TINYINT},
+            </if>
+            <if test="shopPriceReal != null" >
+                #{shopPriceReal,jdbcType=DECIMAL},
+            </if>
+            <if test="promotePriceReal != null" >
+                #{promotePriceReal,jdbcType=DECIMAL},
+            </if>
+            <if test="imgId != null" >
+                #{imgId,jdbcType=INTEGER},
+            </if>
+            <if test="sizeSkuKeyId != null" >
+                #{sizeSkuKeyId,jdbcType=INTEGER},
+            </if>
+            <if test="rate != null" >
+                #{rate,jdbcType=DECIMAL},
+            </if>
+            <if test="currency != null" >
+                #{currency,jdbcType=VARCHAR},
+            </if>
+            <if test="originalInPrice != null" >
+                #{originalInPrice,jdbcType=DECIMAL},
+            </if>
+            <if test="suppSkuId != null" >
+                #{suppSkuId,jdbcType=VARCHAR},
+            </if>
+            <if test="suppSkuBarcode != null" >
+               #{suppSkuBarcode,jdbcType=VARCHAR},
+            </if>
+            <if test="countrySkuValue != null" >
+                #{countrySkuValue,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="queryGoodsSkuByGoodsIds" parameterType="map" resultType="Map">
+        select
+        a.rec_id,b.goods_id,b.goods_sn,b.goodssuppcode,a.sku_value,
+        <if test="depotCoverageAreaId != null and depotCoverageAreaId != ''">
+            d.status
+        </if>
+        <if test="depotCoverageAreaId == null or  depotCoverageAreaId == ''">
+            a.status
+        </if>
+        from who_sku_relation a
+        inner join who_goods b on a.goods_id = b.goods_id
+        <if test="depotCoverageAreaId != null and depotCoverageAreaId != ''">
+            left join who_sku_depot_coverage_area_status d on a.rec_id = d.sku_id
+            left join who_goods_depot_coverage_area_status c on a.goods_id = c.goods_id
+        </if>
+        where b.goods_id in ( ${goodsIds} )
+        <if test="depotCoverageAreaId != null and depotCoverageAreaId != ''">
+            and c.depot_coverage_area_id = #{depotCoverageAreaId}
+            and d.depot_coverage_area_id = #{depotCoverageAreaId}
+            and c.is_on_sale = 0
+        </if>
+        <if test="depotCoverageAreaId == null or  depotCoverageAreaId == ''">
+            and b.is_on_sale = 0
+        </if>
+        and b.prepare_on_sale_status = 0
+        and a.status !=2 and b.is_forever_offsale = 0
+    </select>
+
+    <select id="queryStockSum" resultType="Long" parameterType="map" >
+        select
+        sum(virtual_stock_num)-sum(virtual_lock_num) as stock_sum
+        from  who_wms_goods_virtual_num
+        where depot_coverage_area_id = #{depotCoverageAreaId,jdbcType=INTEGER}
+        and goods_id = #{goodsId,jdbcType=INTEGER}
+        limit 1
+    </select>
+
+    <select id="queryRepeatSuppSkuId" resultType="INTEGER" parameterType="map">
+        select count(1) from who_sku_relation a inner join who_goods b on a.goods_id =b.goods_id
+        where a.status in(0,1) and a.supp_sku_id = #{suppSkuId} and b.is_delete = 0 and b.provider_code = #{providerCode}
+        <if test="goodsId != null">
+            and a.goods_id != ${goodsId}
+        </if>
+    </select>
+
+    <select id="queryRepeatSuppSkuBarcode" resultType="INTEGER" parameterType="map">
+        select count(1) from who_sku_relation a inner join who_goods b on a.goods_id =b.goods_id
+        where a.status in(0,1) and a.supp_sku_barcode = #{suppSkuBarcode} and b.is_delete = 0
+        <if test="goodsId != null">
+            and a.goods_id != ${goodsId}
+        </if>
+    </select>
+
+    <select id="queryRepeatSuppSkuBarcodeWithRecId" resultType="INTEGER" parameterType="map">
+        select count(1) from who_sku_relation a inner join who_goods b on a.goods_id =b.goods_id
+        where a.status in(0,1) and a.rec_id = #{suppSkuBarcode} and b.is_delete = 0
+    </select>
+
+
+</mapper>
